@@ -1,0 +1,448 @@
+# Defining the question.
+A Kenyan entrepreneur has created an online cryptography course and would want to advertise it on her blog. She currently targets audiences originating from various countries. In the past, she ran ads to advertise a related course on the same blog and collected data in the process. She would now like to employ your services as a Data Science Consultant to help her identify which individuals are most likely to click on her ad.
+
+# Defining the metric for success.
+The metric for success in this project will be well plotted visualisations to give insights on the people who are more interested in the cryptography course.
+
+# Understanding the context
+In this day and age when most people "live" on the internet, businesses have
+turned to the internet to search for their customers. This project aims at finding out 
+which netizens are most interested in a cryptography course by checking whether they
+click on a pop up ad on the internet or not.
+
+# Recording the experimental design.
+The main aim of the project is to perform EDA to identify which individuals are most likely to click on a cryptography course ad. Data cleaning and exploratory data analysis will be done and a final documentation.
+
+# Data relevance.
+The data contains Information of people who in the past, have interacted with ads that the entreprenuer had ran about a related course. The data will be used to gain insights on who is most likely to click on the ads of the new course. The data contains variables including: Daily Time Spent on Site, Age, Area income, Daily internet usage.The variables are relevant and timely to do the analysis.
+
+# READING THE DATA.
+
+# Setting work directory and loading the dataset.
+#
+
+```{r}
+setwd("C:/Users/Admin/Downloads/R Markdowns/Advertising IP week 11")
+advertising <- read.csv("advertising.csv", header = TRUE)
+
+```
+
+# CHECKING THE DATA.
+#
+```{r}
+head(advertising)
+
+tail(advertising)
+
+```
+
+# Some variables do not have the righ data type.
+# Ad.Topic.Line, City and Country should be character string.
+# Male and Clicked.on.Ad should be factors, since they are variables,
+# with a limited number of different value.
+# Timestamp should be a date_time.
+
+# Checking whether each column has an appropriate datatype.
+#
+```{r}
+str(advertising)
+
+```
+
+# Converting the variables into the correct data types.
+# Converting variables into string
+#
+```{r}
+
+a = c('Ad.Topic.Line', 'City', 'Country')
+for (i in a) {
+  advertising[,i] = as.character(advertising[,i])
+}
+
+```
+
+
+# Converting variables into factors.
+#
+```{r}
+
+b = c('Male', 'Clicked.on.Ad')
+for (i in b) {
+  advertising[,i] = as.factor(advertising[,i])
+}
+
+```
+
+
+
+# Convering timestamp to appropriate datatype.
+# The strptime command is used to take a string and convert it into a time data type.
+#
+```{r}
+advertising$Timestamp = strptime(advertising$Timestamp,"%Y-%m-%d %H:%M:%S")
+
+```
+
+# Confirming that all the variables have correct datatype.
+#
+```{r}
+
+str(advertising)
+
+```
+
+# TIDYING THE DATASET.
+# Checking for missng values.
+#
+```{r}
+
+colSums(is.na(advertising))
+
+```
+
+# Data is clean and has no missing values.
+#
+
+# Checking for duplicated values.
+#
+```{r}
+
+dup_advertising = advertising[duplicated(advertising), ]
+
+```
+
+
+# There are no duplicated variables. 
+# The dataframe dup_advertising has 0 observations of 10 variables.
+#
+
+# Checking column names.
+# The column 'Male' is better represented as gender where 1 is male and 0 female.
+#
+```{r}
+
+names(advertising)[names(advertising) == "Male"] <- "Gender"
+
+```
+
+
+
+# Checking for outliers.
+# There are 3 numeric variables.(Age, Area.Income, Daily.Internet.Usage)
+# Plotting boxplots to check for outliers.
+# Boxplot for age column.
+#
+```{r}
+
+bxplt_Age = boxplot(advertising$Age,
+                   main = "Boxplot for Age variable",
+                   xlab = "Age",
+                   
+                   col = "pink",
+                   border = "brown",
+                   horizontal = TRUE,
+                   notch = TRUE
+)
+
+```
+
+
+
+# There are no outliers in the Area.Income.
+# 
+ 
+# Boxplot for age column.
+#
+
+```{r}
+
+bxplt_Area.Income = boxplot(advertising$Area.Income,
+                    main = "Boxplot for Area.Income variable",
+                    xlab = "Area Income",
+                    
+                    col = "green",
+                    border = "brown",
+                    horizontal = TRUE,
+                    notch = TRUE
+)
+
+```
+
+
+
+# There are some outliers in the area.income variable
+#
+```{r}
+
+bxplt_Daily.Internet.Usage = boxplot(advertising$Daily.Internet.Usage,
+                            main = "Boxplot for Daily.Internet.Usage variable",
+                            xlab = "Daily Internet Usage",
+                            
+                            col = "blue",
+                            border = "brown",
+                            horizontal = TRUE,
+                            notch = TRUE
+)
+
+```
+
+
+
+# There are no outliers in the Daily.Internet.Usage variable
+#
+
+# Handling the outliers in the area income variable.
+# we store the outliers in a variable outliers.
+#
+```{r}
+
+outliers = bxplt_Area.Income$out
+
+```
+
+
+
+# This vector is to be excluded from our dataset
+# The which() function tells us the rows in which the outliers exist,
+# These rows will be removed from our data set.
+
+# The dataset advertising will be stored in a new variable so as not to destroy dataset
+#
+```{r}
+
+adv_new = advertising
+adv_new = adv_new[-which(adv_new$Area.Income %in% outliers),]
+
+```
+
+
+
+# Checking if the new data frame has outliers.
+#
+```{r}
+
+bxplt_Income = boxplot(adv_new$Area.Income)
+
+```
+
+
+
+# The outliers have been removed.
+# 
+
+# EXPLORATORY DATA ANALYSIS.
+
+# Univariate Analysis.
+# Daily time spent on site distribution
+#
+```{r}
+
+x = hist(adv_new$Daily.Time.Spent.on.Site,
+         main = "Daily time Spent on Site",
+         xlab = "Daily time Spent on Site",
+         col = "pink",
+         )
+
+```
+
+```{r}
+
+summary(adv_new$Daily.Time.Spent.on.Site)
+
+```
+
+
+
+# Daily time spent on website is skewed to the left.
+# this shows that generaly people spend alot of time on the website.
+# from the summary of the variable they spend 65 minutes on the site.
+
+# Age distribution.
+#
+```{r}
+
+y = hist(adv_new$Age,
+         main = "Age distribution",
+         xlab = "Age",
+         col = "gold",
+)
+
+```
+
+```{r}
+
+summary(adv_new$Age)
+
+```
+
+
+
+# Age has a distribution very close to the normal distribution.
+# Most people visiting the site are in the (25 - 35) age bracket.
+# The average age of the audience is 36.
+#
+```{r}
+
+z = hist(adv_new$Area.Income,
+         main = "Area Income distribution",
+         xlab = "Area",
+         col = "purple",
+)
+
+```
+
+```{r}
+
+summary(adv_new$Area.Income)
+
+```
+
+
+
+# The graph is skewed to the left.
+# From the graph most people have high incomes.
+# On average the audience has an income of 55313.
+```{r}
+
+w = hist(adv_new$Daily.Internet.Usage,
+         main = "Daily internet usage distribution",
+         xlab = "Internet usage",
+         col = "red",
+)
+
+```
+
+```{r}
+
+summary(adv_new$Daily.Internet.Usage)
+
+```
+
+
+
+# Many people have a high daily internet use. Histogram is skewed to the left
+#
+
+# Gender distribution
+#
+```{r}
+
+gender_frequency = table(advertising$Gender)
+gender_frequency
+
+```
+
+# Barplot for the frequency.
+#
+```{r}
+
+bar_gen = barplot(gender_frequency,
+                  main = 'gender_frequency',
+                  xlab = 'gender',
+                  ylab = 'count',
+                  col = 'yellow')
+
+```
+
+# The females are slightly more than the males.
+# This data cannot be considered imbalanced in terms of gender.
+
+
+# clicked on ad distribution
+#
+```{r}
+
+coad_frequency = table(advertising$Clicked.on.Ad)
+coad_frequency
+
+```
+
+
+# Barplot for clicked on ad variable.
+#
+```{r}
+
+coad_frequency = table(advertising$Clicked.on.Ad)
+coad_frequency
+
+```
+
+```{r}
+
+bar_coad = barplot(coad_frequency,
+                  main = 'clicked on ad_frequency',
+                  xlab = 'gender',
+                  ylab = 'count',
+                  col = 'orange')
+```
+
+# The clicked on ad variable is the dependent variable.
+# The values 0 and 1 in the variable are even.
+# This is a perrfectly balanced dataset.
+# It is fit to be trained on a machine learning model.
+
+# BIVARIATE ANALYSIS.
+#
+# Analysis to see who clicked more on the ads.
+# imorting the library ggplot2
+#
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+
+j = ggplot(data = advertising, aes(x = Clicked.on.Ad, fill = Gender))+ 
+geom_bar(width = 0.5)
+j
+
+```
+
+# Slightly more males clicked on the ads compared to the women.
+#
+
+# Area income vs clicked on Ad.
+#
+```{r}
+
+k = ggplot(data = advertising, aes(x = Area.Income, fill = Clicked.on.Ad))+ 
+geom_histogram(bins = 25)
+k
+
+```
+
+# people in the Lower income areas clicked on the Ads more.
+#
+
+#Subsetting the numerical variables to check correlations.
+#
+```{r}
+
+num_cols = subset(advertising, select = c("Daily.Time.Spent.on.Site", "Age", "Area.Income", "Daily.Internet.Usage"))
+num_cols 
+cor(num_cols)
+
+```
+
+
+# Plotting a heatmap for the correlations.
+```{r}
+
+heatmap(cor(num_cols))
+
+```
+
+
+
+# pairplots to check correlation of variables.
+#
+```{r}
+
+pairs(num_cols)
+
+```
+
+# Recommendation.
+From the analysis the entrepreneur should focus
+
